@@ -8,6 +8,8 @@ declare -A BOARD_CONFIGS=(
     ["uefi-x86"]="current no yes"
     ["mangopi-m28k"]="vendor no yes"
     ["nanopi-r5c"]="current no yes"
+    ["nanopi-r2s"]="current no yes"
+    ["hinlink-h68k"]="current no yes"
     # 可以继续添加其他板子
 )
 
@@ -43,7 +45,7 @@ echo "参数: BRANCH=$BRANCH, BUILD_DESKTOP=$BUILD_DESKTOP, BUILD_MINIMAL=$BUILD
     BRANCH="$BRANCH" \
     BUILD_DESKTOP="$BUILD_DESKTOP" \
     BUILD_MINIMAL="$BUILD_MINIMAL" \
-    KERNEL_CONFIGURE=no \
+    KERNEL_CONFIGURE=yes \
     RELEASE=bookworm \
     KERNEL_GIT=shallow \
     NETWORKING_STACK="none"

@@ -1,0 +1,29 @@
+# Config Interface
+[[ifaces]]
+name = "eth0"
+zone_type = "wan"
+
+[[ifaces]]
+name = "br_lan"
+create_dev_type = "bridge"
+zone_type = "lan"
+
+[[ifaces]]
+name = "lan0"
+controller_name = "br_lan"
+
+[[ipconfigs]]
+iface_name = "eth0"
+enable = true
+
+[ipconfigs.ip_model]
+t = "dhcpclient"
+
+[[dhcpv4_services]]
+iface_name = "br_lan"
+enable = true
+
+[dhcpv4_services.config]
+server_ip_addr = "10.10.10.1"
+ip_range_start = "10.10.10.100"
+network_mask = 24
