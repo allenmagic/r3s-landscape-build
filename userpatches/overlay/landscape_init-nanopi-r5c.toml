@@ -1,0 +1,208 @@
+flow_rules = []
+
+[config.auth]
+
+[config.web]
+
+[config.log]
+
+[config.store]
+
+[[ifaces]]
+name = "wan"
+create_dev_type = "no_need_to_create"
+zone_type = "wan"
+enable_in_boot = true
+wifi_mode = "undefined"
+
+[ifaces.xps_rps]
+xps = "c"
+rps = "c"
+
+[[ifaces]]
+name = "lan"
+create_dev_type = "no_need_to_create"
+zone_type = "lan"
+enable_in_boot = true
+wifi_mode = "undefined"
+update_at = 1747034185454.0
+
+[ifaces.xps_rps]
+xps = "3"
+rps = "3"
+
+[[ipconfigs]]
+iface_name = "wan"
+enable = true
+update_at = 1766016023277.0
+
+[ipconfigs.ip_model]
+t = "dhcpclient"
+default_router = true
+custome_opts = []
+
+[[nats]]
+iface_name = "wan"
+enable = true
+update_at = 1747034300324.0
+
+[nats.nat_config.tcp_range]
+start = 32768
+end = 65535
+
+[nats.nat_config.udp_range]
+start = 32768
+end = 65535
+
+[nats.nat_config.icmp_in_range]
+start = 32768
+end = 65535
+
+[[dns_rules]]
+id = "5b3ebaca-c37b-42a6-b467-07e586faad4f"
+name = "Landscape Router default rule"
+index = 10000
+enable = true
+filter = "unfilter"
+upstream_id = "c4293ea7-96ea-4d61-a7e6-851476e1c54c"
+source = []
+flow_id = 0
+update_at = 1747033423982.0
+
+[dns_rules.mark]
+allow_reuse_port = false
+flow_id = 0
+
+[dns_rules.mark.action]
+t = "keep_going"
+
+[[firewall_rules]]
+id = "1f2382e5-7e30-46ff-870d-1f4339351d9a"
+index = 1
+enable = true
+remark = "Landscape Router Default Firewall Rule"
+update_at = 1747033661988.0
+
+[[firewall_rules.items]]
+ip_protocol = "udp"
+local_port = "68"
+address = "0.0.0.0"
+ip_prefixlen = 0
+
+[[firewall_rules.items]]
+ip_protocol = "udp"
+local_port = "546"
+address = "::"
+ip_prefixlen = 0
+
+[[firewall_rules.items]]
+ip_protocol = "tcp"
+local_port = "22"
+address = "0.0.0.0"
+ip_prefixlen = 0
+
+[[firewall_rules.items]]
+ip_protocol = "tcp"
+local_port = "6443"
+address = "0.0.0.0"
+ip_prefixlen = 0
+
+[[firewall_rules.items]]
+ip_protocol = "tcp"
+local_port = "6300"
+address = "0.0.0.0"
+ip_prefixlen = 0
+
+[firewall_rules.mark]
+allow_reuse_port = false
+flow_id = 0
+
+[firewall_rules.mark.action]
+t = "keep_going"
+
+[[dhcpv4_services]]
+iface_name = "lan"
+enable = true
+update_at = 1747034213062.0
+
+[dhcpv4_services.config]
+server_ip_addr = "192.168.20.1"
+ip_range_start = "192.168.20.100"
+network_mask = 24
+mac_binding_records = []
+
+[[route_lans]]
+iface_name = "lan"
+enable = true
+update_at = 0.0
+
+[[route_wans]]
+iface_name = "wan"
+enable = true
+update_at = 0.0
+
+[[static_nat_mappings]]
+id = "84f2f977-334d-4a6d-92cc-bf50c249286c"
+enable = true
+remark = "Default DHCPv4 Client Port"
+wan_port = 68
+lan_port = 68
+lan_ipv4 = "0.0.0.0"
+ipv4_l4_protocol = [17]
+ipv6_l4_protocol = []
+update_at = 1747033662031.0
+
+[[static_nat_mappings]]
+id = "1b9d6392-5f20-4b56-b4cf-f54f515223df"
+enable = true
+remark = "Default DHCPv6 Client Port"
+wan_port = 546
+lan_port = 546
+lan_ipv6 = "::"
+ipv4_l4_protocol = []
+ipv6_l4_protocol = [17]
+update_at = 1747033662031.0
+
+[[static_nat_mappings]]
+id = "c858ddea-8596-41ea-993d-e662d6a1e9b2"
+enable = true
+remark = ""
+wan_port = 22
+lan_port = 22
+lan_ipv4 = "0.0.0.0"
+ipv4_l4_protocol = [6]
+ipv6_l4_protocol = []
+update_at = 1747034249301.0
+
+[[static_nat_mappings]]
+id = "1e810f76-f86d-4474-8475-759b69145154"
+enable = true
+remark = ""
+wan_port = 6300
+lan_port = 6300
+lan_ipv4 = "0.0.0.0"
+ipv4_l4_protocol = [6]
+ipv6_l4_protocol = []
+update_at = 1747034261972.0
+
+[[static_nat_mappings]]
+id = "100e63f1-e53e-4079-81e4-7b6b39ce1596"
+enable = true
+remark = ""
+wan_port = 6443
+lan_port = 6443
+lan_ipv4 = "0.0.0.0"
+ipv4_l4_protocol = [6]
+ipv6_l4_protocol = []
+update_at = 1747034271249.0
+
+[[dns_upstream_configs]]
+id = "c4293ea7-96ea-4d61-a7e6-851476e1c54c"
+remark = "Landscape Router Default DNS Upstream"
+ips = ["223.5.5.5", "223.6.6.6"]
+port = 53
+enable_ip_validation = false
+update_at = 1766016179503.0
+
+[dns_upstream_configs.mode]
+t = "plaintext"

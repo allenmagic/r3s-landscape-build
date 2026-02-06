@@ -1,8 +1,27 @@
+# Logic: Ignore everything in userpatches by default, then whitelist what we need
 userpatches/*
+
+# Scripts
 !userpatches/customize-image.sh
-!userpatches/overlay
-output/*
-output/*
-sharefiles/landscape-webserver-aarch64
-sharefiles/static.zip
-sharefiles/landscape-webserver-x86_64
+
+# Kernel Configs (keep these!)
+!userpatches/kernel/
+
+# Overlay Configs (keep TOML files, ignore binaries)
+!userpatches/overlay/
+userpatches/overlay/*
+!userpatches/overlay/*.toml
+
+# Legacy directory (if you plan to remove it later)
+sharefiles/
+
+# Armbian Build Artifacts (in case they are generated inside the submodule directory)
+armbian/output/
+armbian/userpatches/
+armbian/.tmp/
+armbian/cache/
+
+# Editor/Temp files
+*.swp
+*~
+.DS_Store
