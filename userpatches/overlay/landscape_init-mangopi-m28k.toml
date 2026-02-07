@@ -34,7 +34,7 @@ enable = true
 
 [[wifi_configs]]
 iface_name = "wlan0"
-enable = false
+enable = true
 config = """
 # 基本接口配置
 interface=wlan0

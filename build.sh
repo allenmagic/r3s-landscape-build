@@ -155,19 +155,40 @@ if [ "$ENABLE_KERNEL_CONFIGURE" == "yes" ]; then
     echo "============================================================"
     
     if [ -d "output/config" ]; then
-        # Copy generated configs back to project userpatches
-        # Uses -u to only update if newer, and -v for verbose
-        # Note: We are inside 'armbian' dir, so userpatches is ../userpatches
         cp -u -v output/config/linux-*.config "../$KERNEL_CONFIG_DIR/" 2>/dev/null
-        
         if [ $? -eq 0 ]; then
              echo "✅ Successfully synced kernel configs to userpatches/kernel/"
-             echo "   Your changes are now saved in your project repository."
         else
              echo "⚠️  No matching config files found to sync."
         fi
+    fi
+fi
+
+# Convert to VMDK for uefi-x86
+if [ "$SELECTED_BOARD" == "uefi-x86" ]; then
+    echo "============================================================"
+    echo "Converting uefi-x86 image to VMDK..."
+    echo "============================================================"
+    
+    # Find the latest .img file for uefi-x86 (case-insensitive)
+    LATEST_IMG=$(ls -t output/images/*.img 2>/dev/null | grep -i "uefi-x86" | head -n 1)
+    
+    if [ -n "$LATEST_IMG" ]; then
+        VMDK_OUT="${LATEST_IMG%.img}.vmdk"
+        echo "Source: $LATEST_IMG"
+        echo "Target: $VMDK_OUT"
+        
+        qemu-img convert -f raw -O vmdk "$LATEST_IMG" "$VMDK_OUT"
+        
+        if [ $? -eq 0 ]; then
+            echo "✅ Successfully converted to VMDK: $VMDK_OUT"
+        else
+            echo "❌ Error: Failed to convert to VMDK."
+        fi
     else
-        echo "⚠️  output/config directory not found. Did the build complete the config step?"
+        echo "⚠️  No uefi-x86 .img file found in output/images/ to convert."
+        echo "   Available files in output/images/:"
+        ls -F output/images/ 2>/dev/null || echo "   (Directory is empty or missing)"
     fi
 fi
 

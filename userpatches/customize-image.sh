@@ -14,21 +14,28 @@ Main() {
 	rm -f /etc/apt/sources.list
     cat <<EOF > /etc/apt/sources.list
 # 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE} main contrib non-free non-free-firmware
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE} main contrib non-free non-free-firmware
 
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE}-updates main contrib non-free non-free-firmware
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE}-updates main contrib non-free non-free-firmware
 
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE}-backports main contrib non-free non-free-firmware
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ ${RELEASE}-backports main contrib non-free non-free-firmware
 
 # 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换
-deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian-security ${RELEASE}-security main contrib non-free non-free-firmware
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security ${RELEASE}-security main contrib non-free non-free-firmware
 EOF
-	apt update -y
-	apt install -y ppp tcpdump bpftool iptables zip unzip hostapd iw dnsutils
+	apt update -y --fix-missing
+	# 安装基础软件
+	apt install -y ppp tcpdump bpftool iptables zip unzip dnsutils
+
+	# WiFi 相关软件：仅在 mangopi-m28k 上安装
+	if [ "$BOARD" = "mangopi-m28k" ]; then
+		echo "正在为 $BOARD 安装 WiFi 相关软件包 (hostapd, iw)..."
+		apt install -y hostapd iw
+	fi
 
 	# docker instell start
 	sudo apt-get install ca-certificates curl
@@ -93,10 +100,19 @@ EOF
 
 	chmod +x /root/landscape-webserver
 	
+	mkdir -p /root/.landscape-router/
+	
 	if [ -f "/tmp/overlay/static.zip" ]; then
-		echo "安装 static.zip..."
-		cp /tmp/overlay/static.zip /root/static.zip
-		unzip -o /root/static.zip -d /root/.landscape-router
+		echo "安装 static.zip 到 /root/.landscape-router/..."
+		cp /tmp/overlay/static.zip /root/.landscape-router/static.zip
+		unzip -o /root/.landscape-router/static.zip -d /root/.landscape-router/
+		if [ $? -eq 0 ]; then
+			echo "static.zip 解压成功"
+			# 可选：解压后删除压缩包以节省空间
+			# rm /root/.landscape-router/static.zip
+		else
+			echo "错误：static.zip 解压失败"
+		fi
 	else
 		echo "错误：未在 /tmp/overlay 中找到 static.zip"
 	fi
@@ -106,7 +122,7 @@ EOF
 Description=Landscape Router
 
 [Service]
-ExecStart=/root/landscape-webserver
+ExecStart=/bin/bash -c 'if [ ! -f /root/.landscape-router/landscape_init.toml ]; then exec /root/landscape-webserver --auto; else exec /root/landscape-webserver; fi'
 Restart=always
 User=root
 LimitMEMLOCK=infinity
