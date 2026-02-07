@@ -12,7 +12,23 @@ else
     LANDSCAPE_VERSION="latest"
     LANDSCAPE_REPO="https://github.com/ThisSeanZhang/landscape"
     ENABLE_KERNEL_CONFIGURE="no"
+    ARMBIAN_REPO="https://github.com/armbian/build.git"
+    ARMBIAN_VERSION="v24.08"
     echo "Warning: build.env not found, using defaults."
+fi
+
+ARMBIAN_DIR="armbian"
+
+# Ensure Armbian build system exists
+if [ ! -d "$ARMBIAN_DIR" ]; then
+    echo "============================================================"
+    echo "Armbian directory not found. Cloning $ARMBIAN_VERSION..."
+    echo "============================================================"
+    git clone --depth 1 --branch "$ARMBIAN_VERSION" "$ARMBIAN_REPO" "$ARMBIAN_DIR"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to clone Armbian repository."
+        exit 1
+    fi
 fi
 
 # Determine Download Base URL based on version
@@ -37,7 +53,6 @@ RESOURCES=(
 USERPATCHES_DIR="userpatches"
 OVERLAY_DIR="${USERPATCHES_DIR}/overlay"
 KERNEL_CONFIG_DIR="${USERPATCHES_DIR}/kernel"
-ARMBIAN_DIR="armbian"
 
 # Ensure directories exist
 mkdir -p "$OVERLAY_DIR"

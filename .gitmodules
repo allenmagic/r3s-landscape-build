@@ -1,5 +1,0 @@
-[submodule "armbian"]
-	path = armbian
-	url = https://github.com/armbian/build.git
-    ignore = dirty
-	
