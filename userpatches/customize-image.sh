@@ -8,8 +8,24 @@ BUILD_DESKTOP=$4
 Main() {
 	echo "======================== arch: $BOARD ===================================="
 
+	# 彻底禁用 Armbian/Debian 原生联网功能，防止干扰 Landscape Router
+	echo "==== 正在禁用原生网络服务 ===="
 	systemctl disable systemd-resolved
 	systemctl mask systemd-resolved
+	systemctl mask networking
+	systemctl mask NetworkManager
+	systemctl mask wpa_supplicant
+	
+	# 清空 interfaces 配置文件，防止内核自动拉起 DHCP
+	cat <<EOF > /etc/network/interfaces
+# 本文件由构建脚本清空，所有网络功能由 Landscape Router 接管
+auto lo
+iface lo inet loopback
+EOF
+
+	# 确保 /etc/resolv.conf 不是符号链接或被锁定
+	rm -f /etc/resolv.conf
+	echo "nameserver 114.114.114.114" > /etc/resolv.conf
 
 	rm -f /etc/apt/sources.list
     cat <<EOF > /etc/apt/sources.list
@@ -37,18 +53,18 @@ EOF
 		apt install -y hostapd iw
 	fi
 
-	# docker instell start
-	sudo apt-get install ca-certificates curl
-	sudo install -m 0755 -d /etc/apt/keyrings
-	sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-	sudo chmod a+r /etc/apt/keyrings/docker.asc
+	# docker install start
+	apt-get install -y ca-certificates curl
+	install -m 0755 -d /etc/apt/keyrings
+	curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+	chmod a+r /etc/apt/keyrings/docker.asc
 
 	# Add the repository to Apt sources:
 	echo \
 	"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
 	$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-	sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	sudo apt-get update
+	tee /etc/apt/sources.list.d/docker.list > /dev/null
+	apt-get update
 
 	apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 	cat <<EOF > /etc/docker/daemon.json
@@ -57,7 +73,7 @@ EOF
 	"dns": ["172.18.1.1"]
 }
 EOF
-	systemctl start docker
+	systemctl enable docker
 
 	# 部署 Landscape 相关的可执行文件
 	# 注意：这些文件应在 build.sh 阶段预先下载并放入 userpatches/overlay/
@@ -120,6 +136,7 @@ EOF
 	cat <<EOF > /etc/systemd/system/landscape-router.service
 [Unit]
 Description=Landscape Router
+After=local-fs.target
 
 [Service]
 ExecStart=/bin/bash -c 'if [ ! -f /root/.landscape-router/landscape_init.toml ]; then exec /root/landscape-webserver --auto; else exec /root/landscape-webserver; fi'
@@ -132,31 +149,29 @@ WantedBy=multi-user.target
 EOF
 	systemctl enable landscape-router.service
 
-	cat <<EOF > /root/.not_logged_in_yet
-# /root/.not_logged_in_yet
-# 自动配置 Armbian 首次启动设置
-#
-# 设置根用户密码（注意：密码以明文存储，建议使用 SSH 密钥替代密码）
-PRESET_ROOT_PASSWORD="123456"
+	echo "==== 正在直接应用系统设置 ===="
 
-# 设置系统语言和区域
-PRESET_LOCALE="en_US.UTF-8"
+	# 1. 设置 root 密码
+	echo "root:123456" | chpasswd
 
-# 设置系统时区
-PRESET_TIMEZONE="Asia/Shanghai"
+	# 2. 创建用户 ld 并设置密码
+	if ! id "ld" &>/dev/null; then
+		useradd -m -s /bin/bash -G sudo ld
+		echo "ld:123456" | chpasswd
+	fi
 
-PRESET_NET_CHANGE_DEFAULTS="0"
-PRESET_NET_ETHERNET_ENABLED="0"
-PRESET_NET_WIFI_ENABLED="0"
-PRESET_CONNECT_WIRELESS="n"
-PRESET_NET_USE_STATIC="0"
-SET_LANG_BASED_ON_LOCATION="n"
+	# 3. 设置时区
+	ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-# PRESET_USER_NAME="sean"
-# PRESET_DEFAULT_REALNAME="Sean"
-# PRESET_USER_PASSWORD="123456"
-# PRESET_USER_SHELL="bash"
-EOF
+	# 4. 设置语言环境
+	sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+	locale-gen en_US.UTF-8
+	update-locale LANG=en_US.UTF-8
+
+	# 5. 禁用 Armbian 首次运行向导
+	rm -f /root/.not_logged_in_yet
+	touch /root/.no_first_run_setup
+	systemctl disable armbian-firstrun-config.service 2>/dev/null
 } # Main
 
 Main "$@"
