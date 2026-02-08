@@ -109,26 +109,35 @@ declare -A BOARD_CONFIGS=(
     # 可以继续添加其他板子
 )
 
-# 提取所有 BOARD 名字，用于用户选择
-BOARDS=("${!BOARD_CONFIGS[@]}")
+# 获取用户选择的板子
+if [ -n "$1" ]; then
+    SELECTED_BOARD="$1"
+    if [[ -z "${BOARD_CONFIGS[$SELECTED_BOARD]}" ]]; then
+        echo "错误：指定的板子 '$SELECTED_BOARD' 不存在！"
+        exit 1
+    fi
+else
+    # 提取所有 BOARD 名字，用于用户选择 (保持原来的逻辑，但仅在无参数时执行)
+    BOARDS=("${!BOARD_CONFIGS[@]}")
+    # 显示选项菜单
+    echo "请选择要编译的板子："
+    for i in "${!BOARDS[@]}"; do
+        echo "$((i+1))) ${BOARDS[$i]}"
+    done
 
-# 显示选项菜单
-echo "请选择要编译的板子："
-for i in "${!BOARDS[@]}"; do
-    echo "$((i+1))) ${BOARDS[$i]}"
-done
+    # 读取用户输入
+    read -p "输入编号 (1-${#BOARDS[@]}): " choice
 
-# 读取用户输入
-read -p "输入编号 (1-${#BOARDS[@]}): " choice
+    # 检查用户输入是否有效
+    if [[ "$choice" -lt 1 || "$choice" -gt "${#BOARDS[@]}" ]]; then
+        echo "错误：无效的选择！"
+        exit 1
+    fi
 
-# 检查用户输入是否有效
-if [[ "$choice" -lt 1 || "$choice" -gt "${#BOARDS[@]}" ]]; then
-    echo "错误：无效的选择！"
-    exit 1
+    # 获取用户选择的板子
+    SELECTED_BOARD="${BOARDS[$((choice-1))]}"
 fi
 
-# 获取用户选择的板子
-SELECTED_BOARD="${BOARDS[$((choice-1))]}"
 # 提取对应的参数
 IFS=' ' read -r BRANCH BUILD_DESKTOP BUILD_MINIMAL <<< "${BOARD_CONFIGS[$SELECTED_BOARD]}"
 
