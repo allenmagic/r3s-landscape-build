@@ -57,12 +57,6 @@ EOF
 	# 安装基础软件
 	apt install -y ppp tcpdump bpftool iptables zip unzip dnsutils
 
-	# WiFi 相关软件：仅在 mangopi-m28k 上安装
-	if [ "$BOARD" = "mangopi-m28k" ]; then
-		echo "正在为 $BOARD 安装 WiFi 相关软件包 (hostapd, iw)..."
-		apt install -y hostapd iw
-	fi
-
 	# docker install start
 	apt-get install -y ca-certificates curl
 	install -m 0755 -d /etc/apt/keyrings
