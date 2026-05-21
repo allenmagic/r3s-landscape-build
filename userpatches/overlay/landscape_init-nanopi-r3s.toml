@@ -31,9 +31,9 @@ iface_name = "br_lan"
 enable = true
 
 [dhcpv4_services.config]
-ip_range_start = "192.168.5.1.2"
-ip_range_end = "192.168.5.1.255"
-server_ip_addr = "192.168.5.1.10"
+ip_range_start = "192.168.10.2"
+ip_range_end = "192.168.10.255"
+server_ip_addr = "192.168.10.1"
 network_mask = 24
 
 [[route_lans]]
