@@ -1,4 +1,4 @@
-name: Build x86 Image
+name: Build armbian landscape router
 
 on:
   workflow_dispatch:
@@ -7,15 +7,6 @@ on:
         description: 'Board to build (e.g., uefi-x86, mangopi-m28k)'
         required: true
         default: 'uefi-x86'
-  push:
-    branches:
-      - main
-      - ci
-    paths:
-      - 'userpatches/**'
-      - 'build.sh'
-      - 'build.env'
-      - '.github/workflows/**'
 
 permissions:
   contents: write
@@ -62,7 +53,7 @@ jobs:
 
       - name: Set Board Variable
         run: |
-          SELECTED_BOARD="${{ github.event.inputs.board || 'uefi-x86' }}"
+          SELECTED_BOARD="${{ github.event.inputs.board }}"
           echo "SELECTED_BOARD=$SELECTED_BOARD" >> $GITHUB_ENV
           echo "RELEASE_TAG=build-$(date +'%Y%m%d-%H%M%S')-$SELECTED_BOARD" >> $GITHUB_ENV
 
@@ -124,7 +115,6 @@ jobs:
           name: landscape-image-${{ env.SELECTED_BOARD }}
           path: final_output/
 
-      # ★ 关键步骤：把 final_output 里的文件作为 Release 资产上传
       - name: Create Release with Image Assets
         uses: softprops/action-gh-release@v2
         with:
