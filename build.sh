@@ -15,7 +15,7 @@ else
     LANDSCAPE_REPO="https://github.com/ThisSeanZhang/landscape"
     ENABLE_KERNEL_CONFIGURE="no"
     ARMBIAN_REPO="https://github.com/armbian/build.git"
-    ARMBIAN_VERSION="v24.08"
+    ARMBIAN_VERSION="v26.02"
     echo "Warning: build.env not found, using defaults."
 fi
 
@@ -115,6 +115,7 @@ declare -A BOARD_CONFIGS=(
     ["nanopi-r5c"]="current no yes"
     ["nanopi-r2s"]="current no yes"
     ["hinlink-h68k"]="current no yes"
+    ["nanopi-r3s"]="current no yes"
     # 可以继续添加其他板子
 )
 
